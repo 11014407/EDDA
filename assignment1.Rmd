@@ -1,0 +1,151 @@
+---
+title: "Assignment1"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Assignment 1
+Jop Keuning, Nienke Deutz and Harshita Choudhary
+
+##Exercise1
+
+
+#1a
+First of we check the data for normality which is done in two ways, first with a qqplot which shows that normality is present.
+```{r}
+waiting_times <- c(5.4, 17.9, 19.0, 0.5, 15.9, 2.7, 6.2, 2.5, 4.7, 6.9, 10.8, 24.3, 5.6, 23.0, 10.7)
+mu <- mean(waiting_times)
+sigma <- sd(waiting_times)
+qqnorm(waiting_times)
+
+```
+
+But to be extra sure that normality is indeed the case a shapiro test will confirm it as indeed fufilling the normality condition
+```{r}
+shapiro.test(waiting_times)
+```
+Now that normality has been confirmed it is time to construct a confidence interval for the mu at 97% for which alpha needs to be set at 0.05. With this the confidence interval and the minimum sample size can be found.
+
+To calculate the confidence interval we take the mean of the data we take upper quantile of the normal distribution as za with the upper quantile taken defined as 1-alpha. With this the confidence is calculated as $mean - (za/2)*sd/squareroot(n) as the lower bound and mean + (za/2)*sd/squareroot(n)$ where n is the sample size set at 10, mean is the average of the data and sd the standard deviation
+
+```{r}
+n <- length(waiting_times)
+
+alpha <- 0.015
+za <- qnorm(1-alpha)
+ci <- c(mu -(za/2)*(sigma/sqrt(n)), mu + (za/2)*(sigma/sqrt(n)))
+print(ci)
+
+```
+To calculate the minimum sample size needed to attain this confidence interval a $za$ value of the normal distribution of $1-alpha/2$ is needed. With this the calculation of the minimum number of samples is as follows: $n_min = (za^2*sd^2)/E$. Here E signifies the error and the the confidence interval will have a length of at most 2E. As we want the length to be at most 2 we can set E equal to 1 resulting in the followint minimum number of samples
+
+```{r}
+za2 <- qnorm(1-alpha/2)
+n_minimum <- (za2^2*sigma^2)/1
+print(n_minimum)
+```
+Finally we want to compare the previously calculated confidence interval with a bootstrapped one. The code for this bootstrap and it's result can be seen below.
+
+```{r}
+
+B = 1000
+Tstar = numeric(B)
+for(i in 1:B){
+  Xstar <- sample(waiting_times, replace = TRUE)
+  Tstar[i] <- mean(Xstar)}
+Tstar015 <- quantile(Tstar, 0.015)
+Tstar985 <- quantile(Tstar, 0.985)
+sum(Tstar <Tstar015)
+boodstrap <- c(2*mu-Tstar985,2*mu-Tstar015)
+print(boodstrap)
+```
+When compared to the confidence interval calculated above which looks like this, (8.23295 12.58038) we can see that the bootstrap confidence interval is wider than that of the calculated one by a difference of around 2 in both bounds.
+
+
+
+
+
+
+#1b
+To verify the doctor's claim we perform both a t-test and a sign test for a mean less than 15. From the t-test we can see that the mean lies below 13.94 with a confidence interval of 95%. With the sign test we get a probability range of 0.69 to 1 with the confidence interval of 95% meaning we can say that for both tests the doctor's claim that the waiting time is less than 15 minutes on average is correct.
+```{r}
+ttest = t.test(waiting_times,mu=15,alt="less")
+print(ttest)
+n = 10
+binom.test(sum(waiting_times<15), n)
+```
+
+
+1c.
+
+To compute the power of the t-test and sign test is to use p-value of different samples from the data for a large amount of iterations and calculate the average of all p-values that satisfy the condition of $p_value < 0.05$, meaning all significant p-values. This results in that the sign tests have a power of 1 but in both the cases for mu at 13 and 14 the ttest has a power below 0.5
+
+```{r}
+B=1000
+n<-length(waiting_times)
+psign<-numeric(B)
+pttest<-numeric(B)
+for(i in 1:B) {
+  x = sample(waiting_times, replace = TRUE)
+  pttest[i]<-t.test(x, mu=13)[[3]] ## extract p-value
+  psign[i]<-binom.test(sum(x=13), n, p=0.5)[[3]]
+}
+sum(psign<0.05)/B
+sum(pttest<0.05)/B
+
+for(i in 1:B) {
+  x = sample(waiting_times, replace = TRUE)
+  pttest[i]<-t.test(x, mu=14)[[3]] ## extract p-value
+  psign[i]<-binom.test(sum(x=14), n, p=0.5)[[3]]
+}
+sum(psign<0.05)/B
+sum(pttest<0.05)/B
+```
+
+##exercise 5
+
+#5a
+```{r}
+cream <- read.csv("cream.txt", sep="")
+is.vector(cream$acidity)
+
+cream$batch = as.factor(cream$batch)
+cream$position = as.factor(cream$position)
+cream$starter = as.factor(cream$starter)
+
+creamanov = lm(acidity~batch+position+starter,data=cream)
+anova(creamanov)
+summary(creamanov)
+```
+From the three way experiment above we can see that there is a difference between the effects of different starter values on the acidity in the column $Pr(>|t|)$ which shows that there is a difference between starter1 and 2 of 0.0579 which is slightly larger than 0.05 which is generally used as the cutoff for significant effects. This means that there is a large difference between starter1 which is very significant and starter2 which is barely significant. 
+
+
+
+
+#5b
+From the test results seen above in the subsection for 5a we can see that all the values for the position are above the 0.05 cutoff of significance meaning it has no real significance on the acidity and can be left out from the test which will look like the results below.
+```{r}
+creamanov = lm(acidity~batch+starter,data=cream)
+anova(creamanov)
+summary(creamanov)
+```
+
+#5c 
+The friedman test can be used to test if none of the the factors have an effect on the acidity and so we only need to run it if we are not sure any of the factors have ann effect and is good to do just in case. The result of the Friedman test can be seen here.
+```{r}
+friedman.test(cream$acidity, cream$batch, cream$starter,data=cream)
+```
+From this we can see that with a p-value 0.0107 the H0 hypothesis that there is no effect on the acidity is rejected.
+
+#5d
+```{r}
+library(lme4)
+creamlmer = lmer(acidity~(1|batch)+starter,data=cream, REML=FALSE)
+summary(creamlmer)
+creamlmer1 = lmer(acidity~(1|batch),data=cream, REML=FALSE)
+anova(creamlmer, creamlmer1)
+```
+From the summary of the mixed effect analysis we can see in the $Pr(>Chisq)$ column of the anova test, which can in effect be viewed as the p-value of the starter factor sits at a very low value of 3.339e-07 making it very significant. When compared to the p-value of the anova test in section 5b which had a p-value of 4.816e-06 for the starter factor the difference is there but it is very minor with the mixed effect analysis achieving a slightly lower p-value
