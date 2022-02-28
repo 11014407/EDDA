@@ -7,6 +7,10 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+```{r}
+set.seed(1234)
+```
 ###Assignment 1
 Jop Keuning 11014407, Nienke Deutz 2732866 and Harshita Choudhary 13807609
 
@@ -127,12 +131,12 @@ clouds_copy$double_square_root_unseeded='^'(clouds_copy$square_root_unseeded,1/2
 
 Square root of the values: 
 
-```{r Normality Check, echo=FALSE}
+```{r Normality Check}
 # FOR NORMALITY CHECK
 hist(clouds_copy[['square_root_seeded']] - clouds_copy[['square_root_unseeded']],main="Square root of seeded - Square root of unseeded")
 
 ```
-```{r, echo=FALSE}
+```{r}
 # FOR NORMALITY CHECK
 qqnorm(clouds_copy[['square_root_seeded']]-clouds_copy[['square_root_unseeded']]); qqline(clouds_copy[['square_root_seeded']]-clouds_copy[['square_root_unseeded']])
 ```
@@ -141,7 +145,7 @@ QQ - data deviates at the tail. It doesn't seem to follow a normal distribution.
 
 
 Two Sample T-test:
-```{r T-Test, echo=FALSE}
+```{r T-Test}
 # T-test for two paired samples - root
 t.test(clouds_copy[['square_root_seeded']],clouds_copy[['square_root_unseeded']],paired=TRUE)
 
@@ -149,14 +153,14 @@ t.test(clouds_copy[['square_root_seeded']],clouds_copy[['square_root_unseeded']]
 p-value is 0.0127 therefore, H0 is rejected. Hence, nitrate has an effect.
 
 Mann-Whitney Test:
-```{r Mann-Whitney Test, echo=FALSE}
+```{r Mann-Whitney Test}
 ## Mann-Whitnney Test
 wilcox.test(clouds_copy[['square_root_seeded']],clouds_copy[['square_root_unseeded']])
 ```
 p-value is 0.0138 less than 0.05 therefore, H0 is  rejected. Hence, nitrate has an effect. 
 
 Kolmogorov-Smirnov Test:
-```{r Kolmogorov-Smirnov Test, echo=FALSE}
+```{r Kolmogorov-Smirnov Test}
 ## kolmogorov - smirnov Test
 ks.test(clouds_copy[['square_root_seeded']],clouds_copy[['square_root_unseeded']])
 # p-value is less than 0.05 therefore, H0  rejected
@@ -167,12 +171,12 @@ p-value is 0.01905 less than 0.05 therefore, H0 is  rejected. Hence, nitrate has
 
 Double square root values:
 
-```{r Normality Check Double Root , echo=FALSE}
+```{r Normality Check Double Root}
 # FOR NORMALITY CHECK
 hist(clouds_copy[['double_square_root_seeded']]-clouds_copy[['double_square_root_unseeded']],main='Seeded - Unseeded')
 
 ```
-```{r, echo=FALSE}
+```{r}
 # FOR NORMALITY CHECK
 qqnorm(clouds_copy[['double_square_root_seeded']]-clouds_copy[['double_square_root_unseeded']])
 qqline(clouds_copy[['double_square_root_seeded']]-clouds_copy[['double_square_root_unseeded']])
@@ -180,21 +184,21 @@ qqline(clouds_copy[['double_square_root_seeded']]-clouds_copy[['double_square_ro
 QQ : Data deviates at the tails so distribution doesn't seem to be normal.
 
 Two Sample T-Test:
-```{r T-test double root, echo=FALSE}
+```{r T-test double root}
 # T-test for two paired samples - double root
 t.test(clouds_copy[['double_square_root_seeded']],clouds_copy[['double_square_root_unseeded']],paired=TRUE)
 ```
 p-value is 0.008811 therefore, H0 : no effect of silver nitrate, can be rejected. Hence, nitrate has an effect. 
 
 Mann-Whitnney Test:
-```{r Mann-Whitney Test Double Root, echo=FALSE}
+```{r Mann-Whitney Test Double Root}
 ## Mann-Whitnney Test
 wilcox.test(clouds_copy[['double_square_root_seeded']],clouds_copy[['double_square_root_unseeded']])
 ```
 p-value is 0.01383. Hence, silver nitrate has an effect. 
 
 Kolmogorov - Smirnov Test:
-```{r  Kolmogorov-Smirnov Test Double Root, echo=FALSE}
+```{r  Kolmogorov-Smirnov Test Double Root}
 ## kolmogorov - smirnov Test
 ks.test(clouds_copy[['double_square_root_seeded']],clouds_copy[['double_square_root_unseeded']])
 
@@ -252,7 +256,7 @@ hist(tstar)
 pl=sum(tstar<T)/B; pr=sum(tstar>T)/B; p=2*min(pl,pr)
 pl;pr;p
 ```
-We get p = 0.266 which is greater than 0.05 therefore, we can't reject the null hypothesis : seeded data belongs to exponential distribution of a rate parameter lambda.
+We get p = 0.288 which is greater than 0.05 therefore, we can't reject the null hypothesis : seeded data belongs to exponential distribution of a rate parameter lambda.
 
 kolmogorov - Smirnov Test:
 ```{r}
@@ -263,18 +267,18 @@ We get p = 0.2476 which is greater than 0.05 therefore, we can't reject the null
 
 
 #2d : 
-```{r sign test,echo=FALSE}
+```{r sign test}
 # Left tailed
 # null hypothesis : median >= 300
 # Alternate : median < 300
 n = 26
 x = sum(clouds[['seeded']] < 300 )
 x
-binom.test(x,n,p=0.5,alt="less")
+binom.test(x,n,p=0.5)
 ```
-We get a p-value of 0.9622, therefore we can't reject the null hypothesis that the median is greater than or equal to 300. We can say with 95% sugnificance level that the median is not less than 300.
+We get a p-value of 0.1686, therefore we can't reject the null hypothesis that the median is greater than or equal to 300. We can say with 95% significance level that the median is not less than 300.
 
-```{r sign test 2, echo=FALSE}
+```{r sign test 2}
 num_less_30 = sum(clouds[['seeded']] < 30 )
 n=26
 binom.test(num_less_30,n,p=0.25,alternative="less")
@@ -284,12 +288,12 @@ p-value is 0.08019. Therefore, we reject that at most 25% of seeded clouds have 
 
 ##exercise 3
 
-```{r Dogs, echo=FALSE}
+```{r Dogs}
 dogs <- read.csv("dogs.txt", sep="")
 is.data.frame(dogs)
 ```
 #3a
-```{r , echo=FALSE}
+```{r }
 # FOR NORMALITY CHECK
 qqnorm(dogs[,1], main="QQ plot for Isofluorane"); qqline(dogs[,1])
 ```
@@ -322,26 +326,26 @@ shapiro test p-value is greater than 0.05. It follows a normal distribution.
 #3b 
 
 CORRELATION TEST : 
-```{r correlation, echo=FALSE}
+```{r correlation}
 ## correlation isofluorane and halothane
 cor.test(dogs[['isofluorane']],dogs[['halothane']],method="spearman")
 
 ```
 p value of 0.5 is greater than 0.05 therefore, we can't reject the null hypothesis that there is no linear correlation. Hence, isofluorane and halothane are not linearly correlated.
 
-```{r, echo=FALSE}
+```{r}
 qqnorm(dogs[,1]-dogs[,2] , main = "QQ plot for (Isofluorane - Halothane)")
 qqline(dogs[,1]-dogs[,2])
 ```
 QQ plot - Very less diviation therefore, we can say that it comes from a normal distribution.
 
-```{r, echo=FALSE}
+```{r}
 shapiro.test(dogs[,1]-dogs[,2])
 ```
 shapiro test p-value is 0.8744 which is greater than 0.05. Therefore, the difference in isofluorane and halothane is normally distributed.
 
 Two paired sample T-Test : 
-```{r, echo=FALSE}
+```{r}
 t.test(dogs[,1],dogs[,2],paired=TRUE)
 ```
 p value of 0.7145 is more than 0.05, therefore there is no difference between the effect of isofluorane and halothane. Distribution of these columns are not significantly different.
@@ -370,13 +374,13 @@ pr=sum(tstar>myt)/B
 p=2*min(pl,pr)
 p
 ```
-p value of 0.63 is more than 0.05, therefore there is no difference between the effect of isofluorane and halothane. Distribution of these columns are not significantly different
+p value of 0.738 is more than 0.05, therefore there is no difference between the effect of isofluorane and halothane. Distribution of these columns are not significantly different
 
 Permutation test for two-paired samples is valid here and it doesn't depend on the distribution of data. Here, T-test will perform better than the permutation test because data of difference in isofluorane and halothane is normally distributed. 
 
 #3c
 One - way ANOVA: 
-```{r, echo=FALSE}
+```{r}
 dogsframe=data.frame(yield=as.vector(as.matrix(dogs)),variety=factor(rep(1:3,each=10)))
 
 is.factor(dogsframe$variety); is.numeric(dogsframe$variety)
@@ -398,7 +402,7 @@ The plot of fitted(group means) against residuals show no pattern.
 Therefore, assumptions for one-way ANOVA hold true.
 
 Estimated concentrations of epinephrine for different drugs:
-```{r, echo=FALSE}
+```{r}
 
 #isoflurane
 mean(dogs[,1])
@@ -413,7 +417,7 @@ Estimated average concentrations of epinephrine for isoflurane, halothane and cy
 
 #3d
 Krushal-Wallis Test:
-```{r, echo=FALSE}
+```{r}
 kruskal.test(yield~variety,data=dogsframe)
 ```
 
@@ -440,7 +444,7 @@ creamanov = lm(acidity~batch+position+starter,data=cream)
 anova(creamanov)
 summary(creamanov)
 ```
-From the three way experiment above we can see that there is a difference between the effects of different starter values on the acidity in the column $Pr(>|t|)$ which shows that there is a difference between starter1 and 2 of 0.0579 which is slightly larger than 0.05 which is generally used as the cutoff for significant effects. This means that there is a large difference between starter1 which is very significant and starter2 which is barely significant. 
+From the three way experiment above we can see that there is a difference between the effects of different starter values on the acidity in the column $Pr(>|t|)$ which shows that there is a difference between starter1 and 2 of 0.7538 which is much larger than 0.05 which is generally used as the cutoff for significant effects. This means that there is a large difference between starter1 which is very significant and starter2 which is not significant. 
 
 
 
