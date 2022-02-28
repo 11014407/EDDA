@@ -13,7 +13,7 @@ knitr::opts_chunk$set(out.width='150pt', out.height="125pt", fig.width=3, fig.he
 set.seed(1234)
 ```
 # Assignment 1
-Jop Keuning 11014407, Nienke Deutz 2732866 and Harshita Choudhary 13807609
+Jop Keuning (11014407), Nienke Duetz (2732866) and Harshita Choudhary (13807609)
 
 ## Exercise 1
 
