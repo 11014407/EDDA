@@ -5,19 +5,20 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(out.width='150pt', out.height="125pt", fig.width=3, fig.height=2.5)
 ```
 
 
 ```{r}
 set.seed(1234)
 ```
-###Assignment 1
+# Assignment 1
 Jop Keuning 11014407, Nienke Deutz 2732866 and Harshita Choudhary 13807609
 
-##Exercise1
+## Exercise 1
 
 
-#1a
+### 1a
 First of we check the data for normality which is done in two ways, first with a qqplot which shows that normality is present.
 ```{r}
 waiting_times <- c(5.4, 17.9, 19.0, 0.5, 15.9, 2.7, 6.2, 2.5, 4.7, 6.9, 10.8, 24.3, 5.6, 23.0, 10.7)
@@ -33,7 +34,7 @@ shapiro.test(waiting_times)
 ```
 Now that normality has been confirmed it is time to construct a confidence interval for the mu at 97% for which alpha needs to be set at 0.05. With this the confidence interval and the minimum sample size can be found.
 
-To calculate the confidence interval we take the mean of the data we take upper quantile of the normal distribution as za with the upper quantile taken defined as 1-alpha. With this the confidence is calculated as $mean - (za/2)*sd/squareroot(n) as the lower bound and mean + (za/2)*sd/squareroot(n)$ where n is the sample size set at 10, mean is the average of the data and sd the standard deviation
+To calculate the confidence interval we take the mean of the data we take upper quantile of the normal distribution as za with the upper quantile taken defined as 1-alpha. With this the confidence is calculated as $mean - (za/2)*sd/squareroot(n)$ as the lower bound and $mean + (za/2)*sd/squareroot(n)$ where n is the sample size set at 10, mean is the average of the data and sd the standard deviation
 
 ```{r}
 n <- length(waiting_times)
@@ -73,7 +74,7 @@ When compared to the confidence interval calculated above which looks like this,
 
 
 
-#1b
+### 1b.
 To verify the doctor's claim we perform both a t-test and a sign test for a mean less than 15. From the t-test we can see that the mean lies below 13.94 with a confidence interval of 95%. With the sign test we get a probability range of 0.69 to 1 with the confidence interval of 95% meaning we can say that for both tests the doctor's claim that the waiting time is less than 15 minutes on average is correct.
 ```{r}
 ttest = t.test(waiting_times,mu=15,alt="less")
@@ -83,7 +84,7 @@ binom.test(sum(waiting_times<15), n)
 ```
 
 
-1c.
+### 1c.
 
 To compute the power of the t-test and sign test is to use p-value of different samples from the data for a large amount of iterations and calculate the average of all p-values that satisfy the condition of $p_value < 0.05$, meaning all significant p-values. This results in that the sign tests have a power of 1 but in both the cases for mu at 13 and 14 the ttest has a power below 0.5
 
@@ -110,11 +111,50 @@ sum(pttest<0.05)/B
 ```
 
 
-##Exercise 2
+### 1d.
+$CL = \hat{p} \mp z_{a/2} \cdot 2\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}\\$
+$n=15\\$
+Values $> 15.5: 17.9, 19.0, 15.9, 24.3, 23.0\\$
+Thus: $\hat{p} = \frac{5}{15} = \frac{1}{3}\\$
 
+$\hat{p}_r = 0.53$, therefore:$\\$
+$\hat{p} + z_{a/2} \cdot 2\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} = 0.53\\\\
+\frac{1}{3} + z_{a/2} \cdot 2\sqrt{\frac{\frac{1}{3}(1-\frac{1}{3})}{15}} = 0.53\\\\
+\frac{1}{3} + z_{a/2} \cdot 2\sqrt{\frac{2}{135}} = 0.53\\\\
+z_{a/2} \cdot 2\sqrt(\frac{2}{135}) = 0.20\\\\
+z_{a/2} = 0.20 / 2\sqrt{\frac{2}{135}}\\\\
+z_{a/2} = 0.82\\\\\\$
+This means that:$\\\\$
+$\hat{p}_l = \frac{1}{3} - 0.82 \cdot 2\sqrt{\frac{2}{135}} = 0.13\\\\$
+A $z_{a/2} = 0.82$ corresponds to a Confidence level of 79%
 
+### 1e.
+We create two new populations from the data, one for women and one for men. Then, we convert the data to binary: 0 for people with waiting time greater than 15.5 minutes, 1 otherwise. The populations are then:
+Women: [0,0,1,1,1,1,1,1]
+Men: [0,0,0,1,1,1,1]
 
-#b
+The best way to compare these independent populations is with an \textbf{independent sample t-test}. Here, $H_0$ = The waiting times for men and for women are equal, and $H_1$ = The waiting times for men and for women differ. Running this test in R, we get:
+```{r}
+men <- c(0,0,0,1,1,1,1)
+women <- c(0,0,1,1,1,1,1,1)
+t.test(men, women)
+```
+The p-value is larger than 0.05, and therefore we cannot reject the null hypothesis. Thus, the researcher is incorrect when they state that the waiting times for men and women are different.
+
+## Exercise 2
+
+### 2a.
+First of all, the data is independent and not paired. This is because no data point in the unseeded population has a correlations with a data point in the seeded population.
+For each test, we define: $H_0$: the addition of silver nitrate does not lead to more rainfall, and $H_1$: the addition of silver nitrate leads to more rainfall. We perform the three tests:
+```{r}
+clouds <- read.csv("clouds.txt", sep="")
+t.test(clouds[1:26,1], clouds[1:26,2])
+wilcox.test(clouds[1:26,1], clouds[1:26,2])
+ks.test(clouds[1:26,1], clouds[1:26,2])
+```
+Looking at the results, we can reject the null hypothesis according to the Mann-Whitney and Kolmogorov-Smirnov tests, as their p-values are less than 0.05. However, according to the t-test, we cannot reject the null hypothesis, as its p-value is greater than 0.05. In this case, both the Mann-Whitney and Kolmogorov-Smirnov tests are not suitable for the task, since they assume the samples are taken from different populations. However, the samples are taken from the same population of clouds. Therefore, we consider the t-test correct, which states that we cannot reject the null hypothesis, and therefore we cannot state that the silver nitrate has an effect.
+
+### 2b.
 
 ```{r}
 clouds <- read.csv("clouds.txt", sep="")
@@ -209,7 +249,7 @@ Conclusion:
 The p-value of two sample T-test is lower when the square root of the data is taken. However, for Mann Whitney and Kolmogorov - Smirnov Test, the p-value doesn't change on taking the square root.
 
 
-#2c
+### 2c.
 
 ```{r}
 #Calculate the  mean
@@ -266,7 +306,7 @@ ks.test(x = clouds[['seeded']], y = "pexp", rate = estimator_lambda)
 We get p = 0.2476 which is greater than 0.05 therefore, we can't reject the null hypothesis : that seeded data belongs to exponential distribution of a rate parameter lambda.
 
 
-#2d : 
+### 2d. 
 ```{r sign test}
 # Left tailed
 # null hypothesis : median >= 300
@@ -286,13 +326,13 @@ binom.test(num_less_30,n,p=0.25,alternative="less")
 
 p-value is 0.08019. Therefore, we reject that at most 25% of seeded clouds have precipitation less than 30 with significance level of 95%.
 
-##exercise 3
+## Exercise 3
 
 ```{r Dogs}
 dogs <- read.csv("dogs.txt", sep="")
 is.data.frame(dogs)
 ```
-#3a
+### 3a.
 ```{r }
 # FOR NORMALITY CHECK
 qqnorm(dogs[,1], main="QQ plot for Isofluorane"); qqline(dogs[,1])
@@ -323,7 +363,7 @@ shapiro.test(dogs[,3])
 ```
 shapiro test p-value is greater than 0.05. It follows a normal distribution.
 
-#3b 
+### 3b.
 
 CORRELATION TEST : 
 ```{r correlation}
@@ -378,7 +418,7 @@ p value of 0.738 is more than 0.05, therefore there is no difference between the
 
 Permutation test for two-paired samples is valid here and it doesn't depend on the distribution of data. Here, T-test will perform better than the permutation test because data of difference in isofluorane and halothane is normally distributed. 
 
-#3c
+### 3c.
 One - way ANOVA: 
 ```{r}
 dogsframe=data.frame(yield=as.vector(as.matrix(dogs)),variety=factor(rep(1:3,each=10)))
@@ -388,12 +428,12 @@ is.factor(dogsframe$variety); is.numeric(dogsframe$variety)
 dogsanova=lm(yield~variety,data=dogsframe)
 anova(dogsanova)
 ```
-The p-value  0.011, hence HA : μ1 = μ2 = μ3 is is rejected with 95% significance level. Therefore, the type of drug has an effect on the concentration of plasma epinephrine.
+The p-value  0.011, hence HA : mu1 = mu2 = mu3 is is rejected with 95% significance level. Therefore, the type of drug has an effect on the concentration of plasma epinephrine.
 
 ```{r}
 qqnorm(residuals(dogsanova),main = "QQ plot of estimated erros") 
 ```
-QQ plot of residuals eik = Yik − μi (k = 1 to 10 and i = 1 to 3 ) looks close to a normal distribution.
+QQ plot of residuals eik = Yik - mui (k = 1 to 10 and i = 1 to 3 ) looks close to a normal distribution.
 ```{r}
 plot(fitted(dogsanova),residuals(dogsanova))
 ```
@@ -415,23 +455,75 @@ mean(dogs[,3])
 Estimated average concentrations of epinephrine for isoflurane, halothane and cyclopropane are 0.434,0.469 and 0.853 respectively.
 
 
-#3d
+### 3d.
 Krushal-Wallis Test:
 ```{r}
 kruskal.test(yield~variety,data=dogsframe)
 ```
 
-p-value for krushal-wallis test comes out to be 0.05948. Therefore, HA:  μ1 = μ2 = μ3 can't be rejected. The type of drug has no effect on the concentration of plasma epinephrine.
+p-value for krushal-wallis test comes out to be 0.05948. Therefore, HA:  mu1 = mu2 = mu3 can't be rejected. The type of drug has no effect on the concentration of plasma epinephrine.
 
 
 Conclusion - The reliability of ANOVA test depends on the assumption that the data comes from a normal dsitribution. Whereas, Krushal-Wallis Test is a non-paramteric test and doesn't depedent on the distribution of data.
 For the above data ANOVA test and Krushal-Wallis Test arrive at different conclusions. ANOVA test accepts that the type of drug has an effect on the  concentration of plasma epinephrine whereas Krushal-Wallis test rejects this claim.
 The above data follows a normal distribution therefore, the result of one-way ANOVA is more reliable than Krushal-Wallis Test. 
 
+## Exercise 4
 
-##exercise 5
+### 4a.
+To randomize the data, we run:
+```{r}
+data=read.table(file="hemoglobin.txt",header=TRUE)
+data_random = data[sample(nrow(data)),]
+```
 
-#5a
+### 4b.
+```{r}
+aov_model = aov(hemoglobin ~ rate * method, data=data_random)
+summary(aov_model)
+```
+We can see in the summary that the variables *rate*, *method* and their interaction, *rate:method*, all have p-values lower than 0.05. This means that all these variables are statistically significant, and thus influence the hemoglobin levels.
+
+### 4c.
+We can see that the p-value for *rate* significantly lower than the p-values for *method* and *rate:method*,with a factor of 1000. This seems to indicate that *rate* has a lot more influence on the hemoglobin levels than the other variables. However, the interaction *rate:method} falls within statistical significance. This means that the interaction between the variables influences the hemoglobin levels, and whether one or the other has more influence is not really relevant.
+
+The combination of rate 2 with method B yields the highest hemoglobin levels, which is 11.7.
+We filter the dataset on only rate 3 and method A, and then we compute the mean of the hemoglobin column of the filtered dataset:
+```{r}
+rate_3 = subset(data_random, rate==3)
+rate_3_A = subset(rate_3, method=="A")
+mean = mean(rate_3_A$hemoglobin)
+print(paste0("Mean of rate 3 method A: ", mean))
+```
+We then compute the means for each rate:
+```{r}
+rate_1 = subset(data_random, rate==1)
+rate_2 = subset(data_random, rate==2)
+rate_4 = subset(data_random, rate==4)
+
+mean_1 = mean(rate_4$hemoglobin)
+mean_2 = mean(rate_4$hemoglobin)
+mean_3 = mean(rate_4$hemoglobin)
+mean_4 = mean(rate_4$hemoglobin)
+
+print(paste0("Mean of rate 1: ", mean_1))
+print(paste0("Mean of rate 2: ", mean_2))
+print(paste0("Mean of rate 3: ", mean_3))
+print(paste0("Mean of rate 4: ", mean_4))
+```
+This means that **rate 2** gives the highest mean hemoglobin level.
+
+### 4d.
+We perform a one-way ANOVA test with:
+```{r}
+anova_one = aov(hemoglobin ~ rate, data=data_random)
+summary(anova_one)
+```
+We can see that the p-value is below 0.05, which means that we can reject the null-hypothesis. This means that that the hemoglobin level differs for the various rates. For a one-way ANOVA test to work, there need to be at least 3 different categories. Thus, for the rate variable, this is a useful test. It would not be a useful test if we wanted to use the method variable. 
+
+## Exercise 5
+
+### 5a.
 ```{r}
 cream <- read.csv("cream.txt", sep="")
 is.vector(cream$acidity)
@@ -449,7 +541,7 @@ From the three way experiment above we can see that there is a difference betwee
 
 
 
-#5b
+### 5b.
 From the test results seen above in the subsection for 5a we can see that all the values for the position are above the 0.05 cutoff of significance meaning it has no real significance on the acidity and can be left out from the test which will look like the results below.
 ```{r}
 creamanov = lm(acidity~batch+starter,data=cream)
@@ -457,14 +549,14 @@ anova(creamanov)
 summary(creamanov)
 ```
 
-#5c 
+### 5c. 
 The friedman test can be used to test if none of the the factors have an effect on the acidity and so we only need to run it if we are not sure any of the factors have ann effect and is good to do just in case. The result of the Friedman test can be seen here.
 ```{r}
 friedman.test(cream$acidity, cream$batch, cream$starter,data=cream)
 ```
 From this we can see that with a p-value 0.0107 the H0 hypothesis that there is no effect on the acidity is rejected.
 
-#5d
+### 5d.
 ```{r}
 library(lme4)
 creamlmer = lmer(acidity~(1|batch)+starter,data=cream, REML=FALSE)
