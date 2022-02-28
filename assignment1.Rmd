@@ -533,8 +533,8 @@ cream$position = as.factor(cream$position)
 cream$starter = as.factor(cream$starter)
 
 creamanov = lm(acidity~batch+position+starter,data=cream)
-anova(creamanov)
-summary(creamanov)
+creamanov_results = anova(creamanov)
+summary(creamanov_results)
 ```
 From the three way experiment above we can see that there is a difference between the effects of different starter values on the acidity in the column $Pr(>|t|)$ which shows that there is a difference between starter1 and 2 of 0.7538 which is much larger than 0.05 which is generally used as the cutoff for significant effects. This means that there is a large difference between starter1 which is very significant and starter2 which is not significant. 
 
@@ -545,8 +545,8 @@ From the three way experiment above we can see that there is a difference betwee
 From the test results seen above in the subsection for 5a we can see that all the values for the position are above the 0.05 cutoff of significance meaning it has no real significance on the acidity and can be left out from the test which will look like the results below.
 ```{r}
 creamanov = lm(acidity~batch+starter,data=cream)
-anova(creamanov)
-summary(creamanov)
+creamanov_results = anova(creamanov)
+summary(creamanov_results)
 ```
 
 ### 5c. 
