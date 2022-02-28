@@ -70,10 +70,6 @@ print(boodstrap)
 When compared to the confidence interval calculated above which looks like this, (8.23295 12.58038) we can see that the bootstrap confidence interval is wider than that of the calculated one by a difference of around 2 in both bounds.
 
 
-
-
-
-
 ### 1b.
 To verify the doctor's claim we perform both a t-test and a sign test for a mean less than 15. From the t-test we can see that the mean lies below 13.94 with a confidence interval of 95%. With the sign test we get a probability range of 0.69 to 1 with the confidence interval of 95% meaning we can say that for both tests the doctor's claim that the waiting time is less than 15 minutes on average is correct.
 ```{r}
@@ -100,7 +96,6 @@ for(i in 1:B) {
 }
 sum(psign<0.05)/B
 sum(pttest<0.05)/B
-
 for(i in 1:B) {
   x = sample(waiting_times, replace = TRUE)
   pttest[i]<-t.test(x, mu=14)[[3]] ## extract p-value
@@ -118,12 +113,7 @@ Values $> 15.5: 17.9, 19.0, 15.9, 24.3, 23.0\\$
 Thus: $\hat{p} = \frac{5}{15} = \frac{1}{3}\\$
 
 $\hat{p}_r = 0.53$, therefore:$\\$
-$\hat{p} + z_{a/2} \cdot 2\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} = 0.53\\\\
-\frac{1}{3} + z_{a/2} \cdot 2\sqrt{\frac{\frac{1}{3}(1-\frac{1}{3})}{15}} = 0.53\\\\
-\frac{1}{3} + z_{a/2} \cdot 2\sqrt{\frac{2}{135}} = 0.53\\\\
-z_{a/2} \cdot 2\sqrt(\frac{2}{135}) = 0.20\\\\
-z_{a/2} = 0.20 / 2\sqrt{\frac{2}{135}}\\\\
-z_{a/2} = 0.82\\\\\\$
+$\hat{p} + z_{a/2} \cdot 2\sqrt{\frac{\hat{p}(1-\hat{p})}{n}} = 0.53 \Rightarrow \frac{1}{3} + z_{a/2} \cdot 2\sqrt{\frac{\frac{1}{3}(1-\frac{1}{3})}{15}} = 0.53 \Rightarrow  \frac{1}{3} + z_{a/2} \cdot 2\sqrt{\frac{2}{135}} = 0.53 \Rightarrow  z_{a/2} \cdot 2\sqrt(\frac{2}{135}) = 0.20 \Rightarrow  z_{a/2} = 0.20 / 2\sqrt{\frac{2}{135}} \Rightarrow  z_{a/2} = 0.82\\\\\\$
 This means that:$\\\\$
 $\hat{p}_l = \frac{1}{3} - 0.82 \cdot 2\sqrt{\frac{2}{135}} = 0.13\\\\$
 A $z_{a/2} = 0.82$ corresponds to a Confidence level of 79%
@@ -164,8 +154,6 @@ clouds_copy$square_root_seeded ='^'(clouds_copy$seeded,1/2)
 clouds_copy$square_root_unseeded ='^'(clouds_copy$unseeded,1/2)
 clouds_copy$double_square_root_seeded='^'(clouds_copy$square_root_seeded,1/2)
 clouds_copy$double_square_root_unseeded='^'(clouds_copy$square_root_unseeded,1/2)
-#View(clouds_copy)
-
 ```
 
 
@@ -174,7 +162,6 @@ Square root of the values:
 ```{r Normality Check}
 # FOR NORMALITY CHECK
 hist(clouds_copy[['square_root_seeded']] - clouds_copy[['square_root_unseeded']],main="Square root of seeded - Square root of unseeded")
-
 ```
 ```{r}
 # FOR NORMALITY CHECK
@@ -183,12 +170,10 @@ qqnorm(clouds_copy[['square_root_seeded']]-clouds_copy[['square_root_unseeded']]
 
 QQ - data deviates at the tail. It doesn't seem to follow a normal distribution. There are a few outliers.
 
-
 Two Sample T-test:
 ```{r T-Test}
 # T-test for two paired samples - root
 t.test(clouds_copy[['square_root_seeded']],clouds_copy[['square_root_unseeded']],paired=TRUE)
-
 ```
 p-value is 0.0127 therefore, H0 is rejected. Hence, nitrate has an effect.
 
@@ -241,7 +226,6 @@ Kolmogorov - Smirnov Test:
 ```{r  Kolmogorov-Smirnov Test Double Root}
 ## kolmogorov - smirnov Test
 ks.test(clouds_copy[['double_square_root_seeded']],clouds_copy[['double_square_root_unseeded']])
-
 ```
 p-value is 0.01905. Hence, silver nitrate has an effect. 
 
@@ -262,7 +246,6 @@ c_i_lower = mean_estimator - t_0.025*std_dev_estimator/sqrt(n)
 c_i_upper = mean_estimator + t_0.025*std_dev_estimator/sqrt(n)
 c_i_lower
 c_i_upper
-
 ```
 
 ```{r}
@@ -283,13 +266,10 @@ T
 B=1000
 tstar=numeric(B)
 n=26
-
 for (i in 1:B){
   xstar=rexp(n,estimator_lambda)
   tstar[i]=median(xstar)}
 hist(tstar)
-
-
 ```
 
 ```{r}
@@ -345,7 +325,6 @@ p-value of shapiro-test is less than 0.05 therefore the claim that it follows a 
 
 ```{r}
 qqnorm(dogs[,2], main="QQ plot for halothane"); qqline(dogs[,2])
-
 ```
 Looking at the QQ-plot it is reasonable to say that Halothane data is from a normal distribution.
 ```{r}
@@ -369,7 +348,6 @@ CORRELATION TEST :
 ```{r correlation}
 ## correlation isofluorane and halothane
 cor.test(dogs[['isofluorane']],dogs[['halothane']],method="spearman")
-
 ```
 p value of 0.5 is greater than 0.05 therefore, we can't reject the null hypothesis that there is no linear correlation. Hence, isofluorane and halothane are not linearly correlated.
 
@@ -394,7 +372,6 @@ PERMUTATION TEST:
  
 ```{r permuttaion test}
 boxplot(dogs[,1],dogs[,2],names=c("isoflurane","halothane"))
-
 ```
 ```{r}
 mystat=function(x,y) {mean(x-y)}
@@ -422,9 +399,7 @@ Permutation test for two-paired samples is valid here and it doesn't depend on t
 One - way ANOVA: 
 ```{r}
 dogsframe=data.frame(yield=as.vector(as.matrix(dogs)),variety=factor(rep(1:3,each=10)))
-
 is.factor(dogsframe$variety); is.numeric(dogsframe$variety)
-
 dogsanova=lm(yield~variety,data=dogsframe)
 anova(dogsanova)
 ```
@@ -443,14 +418,12 @@ Therefore, assumptions for one-way ANOVA hold true.
 
 Estimated concentrations of epinephrine for different drugs:
 ```{r}
-
 #isoflurane
 mean(dogs[,1])
 #halothane
 mean(dogs[,2])
 #cyclopropane
 mean(dogs[,3])
-
 ```
 Estimated average concentrations of epinephrine for isoflurane, halothane and cyclopropane are 0.434,0.469 and 0.853 respectively.
 
@@ -500,12 +473,10 @@ We then compute the means for each rate:
 rate_1 = subset(data_random, rate==1)
 rate_2 = subset(data_random, rate==2)
 rate_4 = subset(data_random, rate==4)
-
 mean_1 = mean(rate_4$hemoglobin)
 mean_2 = mean(rate_4$hemoglobin)
 mean_3 = mean(rate_4$hemoglobin)
 mean_4 = mean(rate_4$hemoglobin)
-
 print(paste0("Mean of rate 1: ", mean_1))
 print(paste0("Mean of rate 2: ", mean_2))
 print(paste0("Mean of rate 3: ", mean_3))
@@ -527,11 +498,9 @@ We can see that the p-value is below 0.05, which means that we can reject the nu
 ```{r}
 cream <- read.csv("cream.txt", sep="")
 is.vector(cream$acidity)
-
 cream$batch = as.factor(cream$batch)
 cream$position = as.factor(cream$position)
 cream$starter = as.factor(cream$starter)
-
 creamanov = lm(acidity~batch+position+starter,data=cream)
 creamanov_results = anova(creamanov)
 summary(creamanov_results)
@@ -545,8 +514,8 @@ From the three way experiment above we can see that there is a difference betwee
 From the test results seen above in the subsection for 5a we can see that all the values for the position are above the 0.05 cutoff of significance meaning it has no real significance on the acidity and can be left out from the test which will look like the results below.
 ```{r}
 creamanov = lm(acidity~batch+starter,data=cream)
-creamanov_results = anova(creamanov)
-summary(creamanov_results)
+anova(creamanov)
+summary(creamanov)
 ```
 
 ### 5c. 
