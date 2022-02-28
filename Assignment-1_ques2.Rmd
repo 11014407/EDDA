@@ -1,0 +1,242 @@
+---
+title: "Assignment-1"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+Load the Data
+```{r clouds, echo=FALSE}
+clouds <- read.csv("~/Downloads/clouds.txt", sep="")
+is.data.frame(clouds)
+
+```
+
+
+PART A - 
+
+To perform a two sample t-test, the difference in the two samples should follow a normal distribution - 
+```{r Part-a, echo=FALSE}
+## Paired data
+
+# FOR NORMALITY CHECK - For difference in data groups
+qqnorm(clouds[,1]-clouds[,2]); qqline(clouds[,1]-clouds[,2])
+
+```
+Difference in the two samples is not normal, it deviates.
+
+Shapiro Test : 
+For normality check
+```{r}
+shapiro.test(clouds[,1]-clouds[,2])
+```
+The p-value from shapiro-test is less than 0.05, therefore null hypothesis(data comes from a normal distribution) is rejected.The difference of the two samples does not follow a normal distribution.
+
+Two Sample T-test : 
+
+```{r, echo=FALSE}
+# T-test for two paired samples
+t.test(clouds[,1],clouds[,2],paired=TRUE)
+
+```
+p-value of 0.0447 is less than 0.05 therefore, H0: silver nitrate has no effect, is rejected.
+
+Mann-Whitnney Test :
+
+```{r, echo=FALSE}
+## Mann-Whitnney Test
+wilcox.test(clouds[,1],clouds[,2])
+```
+p-value is 0.01383 so H0 is rejected. Hence, silver nitrate has an effect. 
+
+Kolmogorov - Smirnov Test:
+
+```{r, echo=FALSE}
+## kolmogorov - smirnov Test
+ks.test(clouds[,1],clouds[,2])
+```
+p-value is 0.01905 so H0 is rejected. Hence, silver nitrate has an effect.
+
+Conclusion: 
+Mann-Whitney and Kolmogorov-Smirnov test are meant for two independent samples. Whereas here the samples are paired, seeded with silver nitrate vs unseeded. Therefore, these two tests are not appicable for this analysis. The difference in data('Seeded'-'Unseeded') does not seem to follow a normal distribution so we can't rely on the t-test for two paired samples.
+
+PART B :
+
+```{r, echo=FALSE}
+
+clouds_copy <- data.frame(clouds)
+clouds_copy$square_root_seeded ='^'(clouds_copy$seeded,1/2)
+clouds_copy$square_root_unseeded ='^'(clouds_copy$unseeded,1/2)
+clouds_copy$double_square_root_seeded='^'(clouds_copy$square_root_seeded,1/2)
+clouds_copy$double_square_root_unseeded='^'(clouds_copy$square_root_unseeded,1/2)
+#View(clouds_copy)
+
+```
+
+
+Square root of the values: 
+
+```{r Normality Check, echo=FALSE}
+# FOR NORMALITY CHECK
+hist(clouds_copy[['square_root_seeded']] - clouds_copy[['square_root_unseeded']],main="Square root of seeded - Square root of unseeded")
+
+```
+```{r, echo=FALSE}
+# FOR NORMALITY CHECK
+qqnorm(clouds_copy[['square_root_seeded']]-clouds_copy[['square_root_unseeded']]); qqline(clouds_copy[['square_root_seeded']]-clouds_copy[['square_root_unseeded']])
+```
+
+QQ - data deviates at the tail. It doesn't seem to follow a normal distribution. There are a few outliers.
+
+
+Two Sample T-test:
+```{r T-Test, echo=FALSE}
+# T-test for two paired samples - root
+t.test(clouds_copy[['square_root_seeded']],clouds_copy[['square_root_unseeded']],paired=TRUE)
+
+```
+p-value is 0.0127 therefore, H0 is rejected. Hence, nitrate has an effect.
+
+Mann-Whitney Test:
+```{r Mann-Whitney Test, echo=FALSE}
+## Mann-Whitnney Test
+wilcox.test(clouds_copy[['square_root_seeded']],clouds_copy[['square_root_unseeded']])
+```
+p-value is 0.0138 less than 0.05 therefore, H0 is  rejected. Hence, nitrate has an effect. 
+
+Kolmogorov-Smirnov Test:
+```{r Kolmogorov-Smirnov Test, echo=FALSE}
+## kolmogorov - smirnov Test
+ks.test(clouds_copy[['square_root_seeded']],clouds_copy[['square_root_unseeded']])
+# p-value is less than 0.05 therefore, H0  rejected
+
+```
+p-value is 0.01905 less than 0.05 therefore, H0 is  rejected. Hence, nitrate has an effect.
+
+
+Double square root values:
+
+```{r Normality Check Double Root , echo=FALSE}
+# FOR NORMALITY CHECK
+hist(clouds_copy[['double_square_root_seeded']]-clouds_copy[['double_square_root_unseeded']],main='Seeded - Unseeded')
+
+```
+```{r, echo=FALSE}
+# FOR NORMALITY CHECK
+qqnorm(clouds_copy[['double_square_root_seeded']]-clouds_copy[['double_square_root_unseeded']])
+qqline(clouds_copy[['double_square_root_seeded']]-clouds_copy[['double_square_root_unseeded']])
+```
+QQ : Data deviates at the tails so distribution doesn't seem to be normal.
+
+Two Sample T-Test:
+```{r T-test double root, echo=FALSE}
+# T-test for two paired samples - double root
+t.test(clouds_copy[['double_square_root_seeded']],clouds_copy[['double_square_root_unseeded']],paired=TRUE)
+```
+p-value is 0.008811 therefore, H0 : no effect of silver nitrate, can be rejected. Hence, nitrate has an effect. 
+
+Mann-Whitnney Test:
+```{r Mann-Whitney Test Double Root, echo=FALSE}
+## Mann-Whitnney Test
+wilcox.test(clouds_copy[['double_square_root_seeded']],clouds_copy[['double_square_root_unseeded']])
+```
+p-value is 0.01383. Hence, silver nitrate has an effect. 
+
+Kolmogorov - Smirnov Test:
+```{r  Kolmogorov-Smirnov Test Double Root, echo=FALSE}
+## kolmogorov - smirnov Test
+ks.test(clouds_copy[['double_square_root_seeded']],clouds_copy[['double_square_root_unseeded']])
+
+```
+p-value is 0.01905. Hence, silver nitrate has an effect. 
+
+Conclusion:
+The p-value of two sample T-test is lower when the square root of the data is taken. However, for Mann Whitney and Kolmogorov - Smirnov Test, the p-value doesn't change on taking the square root.
+
+
+PART C:
+
+```{r}
+#Calculate the  mean
+mean_estimator = mean(clouds$seeded)
+std_dev_estimator = sd(clouds$seeded)
+n = 26
+sqrt(n)
+t_0.025 = 2.05954 
+c_i_lower = mean_estimator - z*std_dev_estimator/sqrt(n)
+c_i_upper = mean_estimator + z*std_dev_estimator/sqrt(n)
+c_i_lower
+c_i_upper
+
+```
+
+```{r}
+t.test(clouds[['seeded']],mu = 0)
+estimator_lambda = 1/mean_estimator
+ci_lower = 1/704.8432
+ci_upper = 1/179.1260
+estimator_lambda
+ci_lower
+ci_upper
+```
+lambda(Estimator) =  0.002262522 and confidence interval is (0.001418755,0.005582662) 
+
+Bootstrap Test:
+```{r}
+T = median(clouds[['seeded']])
+T
+B=1000
+tstar=numeric(B)
+n=26
+
+for (i in 1:B){
+  xstar=rexp(n,estimator_lambda)
+  tstar[i]=median(xstar)}
+hist(tstar)
+
+
+```
+
+```{r}
+pl=sum(tstar<T)/B; pr=sum(tstar>T)/B; p=2*min(pl,pr)
+pl;pr;p
+```
+We get p = 0.266 which is greater than 0.05 therefore, we can't reject the null hypothesis : seeded data belongs to exponential distribution of a rate parameter lambda.
+
+kolmogorov - Smirnov Test:
+```{r}
+## kolmogorov - smirnov Test
+ks.test(x = clouds[['seeded']], y = "pexp", rate = estimator_lambda)
+```
+We get p = 0.2476 which is greater than 0.05 therefore, we can't reject the null hypothesis : that seeded data belongs to exponential distribution of a rate parameter lambda.
+
+
+PART D : 
+```{r sign test,echo=FALSE}
+# Left tailed
+# null hypothesis : median >= 300
+# Alternate : median < 300
+n = 26
+x = sum(clouds[['seeded']] < 300 )
+x
+binom.test(x,n,p=0.5,alt="less")
+```
+We get a p-value of 0.9622, therefore we can't reject the null hypothesis that the median is greater than or equal to 300. We can say with 95% sugnificance level that the median is not less than 300.
+
+```{r sign test, echo=FALSE}
+num_less_30 = sum(clouds[['seeded']] < 30 )
+n=26
+binom.test(num_less_30,n,p=0.25,alternative="less")
+```
+
+p-value is 0.08019. Therefore, we reject that at most 25% of seeded clouds have precipitation less than 30 with significance level of 95%.
+
