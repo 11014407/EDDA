@@ -49,18 +49,19 @@ This means that the higher the sexual activity, the shorter the fruitflies live.
 
 
 ### 1b.
-We now include the thorax variable, which is a numerical variable. That means we now have a factor variable, a numerical variable and a numerical outcome, which means that an ANCOVA-test is appropriate.
+We now include the thorax variable, which is a numerical variable. That means we now have a factor variable, a numerical variable and a numerical outcome, which means that an ANCOVA-test is appropriate. We use
+the drop1 function to make sure the result is correct even if the ANCOVA test is not balanced
 
 ```{r}
-fruitflies_model2 <- aov(loglongevity ~ activity + thorax, data=fruitflies)
+fruitflies$activity = as.factor(fruitflies$activity)
+fruitflies_model2 = drop1(lm(loglongevity ~ activity + thorax, data=fruitflies), test="F")
 fruitflies_model2
-#Anova(fruitflies_model2, type="III") 
 summary(fruitflies_model2)
 ```
 
 From the p-values, we can see that both the thorax variable and the activity variable influence the longevity, as these p-values are both well below 0.05.
 
-If we take the maximum and minimum thorax lenghts, we get the following thorax lengths and longevities:
+If we take the maximum and minimum thorax lengths, we get the following thorax lengths and longevities:
 
 ```{r}
 max_thorax = max(fruitflies['thorax'])
@@ -88,7 +89,7 @@ mean(isolated_min$longevity)
 We can see that for both the maximum and minimum values of thorax length, the longevity is highest for *isolated activity*, lower for *low activity* and lowest for *high activity*. Even so, the longevity for the maximum thorax value is still higher for high activity than it is for the minimum thorax value for isolated activity. This means that sexual activity decreases longevity. 
 
 ### 1c.
-We once again plot the longevity agains the thorax length:
+We once again plot the longevity against the thorax length:
 ```{r}
 plot(high$thorax, high$longevity, col='blue', pch=20)
 points(low$thorax, low$longevity, col='red', pch=20)
@@ -111,12 +112,11 @@ In the results, we can see that the p-values for each activity type are below 0.
 Since both the thorax length and the activity type influence the longevity, we prefer the analysis with thorax length, as this is a more complete analysis. However, since the thorax length influences the longevity the same way for each activity type, the analysis without the thorax length is still correct. If the thorax length would influence the longevity differently for each activity type, then it would be incorrect to analyse the data without the thorax length.
 
 
-### 1ce.
+### 1e.
 We now perform the ANCOVA analysis, but with the longevity as the response variable instead of the log longevity:
 ```{r}
-fruitflies_model2 <- aov(longevity ~ activity + thorax, data=fruitflies)
+fruitflies_model2 = drop1(lm(longevity ~ activity + thorax, data=fruitflies), test="F")
 fruitflies_model2
-#Anova(fruitflies_model2, type="III") 
 summary(fruitflies_model2)
 ```
 
