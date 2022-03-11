@@ -3,26 +3,90 @@ title: "Assignment 2 Q5"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+Load awards.txt
+```{r}
+awards = read.csv("awards.txt", sep="")
 ```
 
-## R Markdown
+### 5a.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+We perform Poisson regression using the variable program
+```{r}
+poisson_awards <- glm(num_awards ~ prog, family="poisson", data=awards)
+#poisson_awards
+summary(poisson_awards)
+```
+Here, the p-value is greater than 0.05, so the variable program alone does not influence the number of awards. 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Next, we estimate the number of awards of each type of program, according to the Poisson model. We create new dataframes that contain each of the program type, and use the predict() function to apply the model to the awards type.
 
-```{r cars}
-summary(cars)
+```{r}
+new_data = data.frame(prog=1)
+predict(poisson_awards, newdata=new_data, type = "response")
+new_data = data.frame(prog=2)
+predict(poisson_awards, newdata=new_data, type = "response")
+new_data = data.frame(prog=3)
+predict(poisson_awards, newdata=new_data, type = "response")
+```
+According to the results, program *academic* (3) results in the highest number of awards, which is 1.12.
+
+### 5b.
+```{r}
+prog1 = subset(awards, prog=1)
+hist(prog1$num_awards)
+prog2 = subset(awards, prog=2)
+hist(prog2$num_awards)
+prog3 = subset(awards, prog=3)
+hist(prog3$num_awards)
+```
+The distributions have the same shape, the response variable is ordinal and we assume independence. Therefore, we *can* apply the Kruskal-Wallis test.
+Performing this test:
+
+```{r}
+kruskal_wallis<-kruskal.test(num_awards ~ prog, data=awards)
+kruskal_wallis
+```
+Here, the p-value is lower than 0.05, which implies that the program *does* influence the number of awards.
+
+### 5c
+
+We perform Poisson regression using both the variables math and program:
+
+```{r}
+poisson_awards <- glm(num_awards ~ prog+math, family="poisson", data=awards)
+#poisson_awards
+summary(poisson_awards)
 ```
 
-## Including Plots
+When using math and program, the p-values for both variables are below 0.05, and are thus significant. This is interesting, as creating the model using only the program variable yields that program is not significant in influencing the number of awards. This means that the model using only the program variable is insufficient. 
 
-You can also embed plots, for example:
+To see which program is most effective, we use the model to predict the number of awards for each program, using both the maximum and minimum values of the math variable
+```{r}
+print("Program 1")
+new_data = data.frame(prog=1, math=max(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+new_data = data.frame(prog=1, math=min(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+print("Program 2")
+new_data = data.frame(prog=2, math=max(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+new_data = data.frame(prog=2, math=min(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+
+print("Program 3")
+new_data = data.frame(prog=3, math=max(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+new_data = data.frame(prog=3, math=min(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+
 ```
+In the results, we can see that for both the maximum and minimum values of the math variable, the number of awards is the highest for program 3. Therefore program 3 is three is the best for the number of awards.
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+The number of awards for the vocational program (1) and the math score of 55 is estimated by:
+```{r}
+new_data = data.frame(prog=1, math=55)
+predict(poisson_awards, newdata=new_data, type = "response")
+```
+Thus, the number of awards for the vocational program and math score 55 is 0.75.
+
