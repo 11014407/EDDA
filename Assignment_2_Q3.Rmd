@@ -1,3 +1,7 @@
+---
+title: "Assignment 2 Q3"
+output: pdf_document
+---
 
 Load fruitflies.txt and add loglongevity column
 ```{r}
@@ -7,7 +11,7 @@ loglong = log(fruitflies["longevity"])
 fruitflies['loglongevity'] = loglong
 ```
 
-### 1a.
+### 3a.
 We want to know if there is a statistically significant difference between three
 groups, based on one variable (log longevity). Therefore, we use a one-way
 ANOVA test. 
@@ -48,7 +52,7 @@ for *isolated activity* is 63.56
 This means that the higher the sexual activity, the shorter the fruitflies live.
 
 
-### 1b.
+### 3b.
 We now include the thorax variable, which is a numerical variable. That means we now have a factor variable, a numerical variable and a numerical outcome, which means that an ANCOVA-test is appropriate. We use
 the drop1 function to make sure the result is correct even if the ANCOVA test is not balanced
 
@@ -88,7 +92,7 @@ mean(isolated_min$longevity)
 ```
 We can see that for both the maximum and minimum values of thorax length, the longevity is highest for *isolated activity*, lower for *low activity* and lowest for *high activity*. Even so, the longevity for the maximum thorax value is still higher for high activity than it is for the minimum thorax value for isolated activity. This means that sexual activity decreases longevity. 
 
-### 1c.
+### 3c.
 We once again plot the longevity against the thorax length:
 ```{r}
 plot(high$thorax, high$longevity, col='blue', pch=20)
@@ -108,11 +112,11 @@ summary(isolated_model)
 ```
 In the results, we can see that the p-values for each activity type are below 0.05. Therefore, the difference is statistically significant for each activity type. 
 
-### 1d.
+### 3d.
 Since both the thorax length and the activity type influence the longevity, we prefer the analysis with thorax length, as this is a more complete analysis. However, since the thorax length influences the longevity the same way for each activity type, the analysis without the thorax length is still correct. If the thorax length would influence the longevity differently for each activity type, then it would be incorrect to analyse the data without the thorax length.
 
 
-### 1e.
+### 3e.
 We now perform the ANCOVA analysis, but with the longevity as the response variable instead of the log longevity:
 ```{r}
 fruitflies_model2 = drop1(lm(longevity ~ activity + thorax, data=fruitflies), test="F")
