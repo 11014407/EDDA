@@ -1,0 +1,240 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+airpollution <- read.csv("~/Downloads/airpollution.txt", sep="")
+View(airpollution)
+```
+
+```{r}
+pairs(airpollution)
+
+# temperature and oxidant might have a linear relation
+
+```
+
+```{r}
+dogslr = lm(oxidant~wind+temperature+humidity+insolation,data=airpollution)
+summary(dogslr)
+```
+p-value for wind and temperature is less than 0.5. Therefore, they are significant.
+
+Cook's Distance with only significant explanatory variables: 
+```{r}
+dogsnlm = lm(oxidant~wind+temperature,data=airpollution)
+round(cooks.distance(dogsnlm),2)
+max(round(cooks.distance(dogsnlm),2))
+```
+No influence point here.
+
+
+Cook's Distance for entire model : 
+```{r}
+round(cooks.distance(dogslr),2)
+max(round(cooks.distance(dogslr),2))
+order(cooks.distance(dogslr))
+```
+
+Cook's distance for 23rd data point is close to 1 so it can be an influence point.
+```{r}
+plot(1:30,cooks.distance(dogslr),type="b")
+```
+COLLINEARITY:
+
+A.) Pairwise Linear Correlation
+```{r}
+round(cor(airpollution),2)
+```
+No significant linear correlation
+
+
+# check multicolinearity of variables :
+```{r}
+vif(dogsnlm)
+```
+
+
+```{r}
+install.packages("car",dependencies=TRUE)
+library(car)
+```
+
+```{r}
+x=residuals(lm(wind~temperature+humidity+insolation,data=airpollution))
+y=residuals(lm(oxidant~temperature+humidity+insolation,data=airpollution))
+plot(x,y,main="Added variable plot for wind", xlab="residual of wind",ylab="residual of oxidant")
+```
+
+```{r}
+x_new=residuals(lm(wind~temperature,data=airpollution))
+y_new=residuals(lm(oxidant~temperature,data=airpollution))
+summary(lm(y_new~x_new))
+summary(dogsnlm)
+```
+Step-up model:
+```{r}
+summary(lm(oxidant~wind,data=airpollution))
+summary(lm(oxidant~temperature,data=airpollution))
+summary(lm(oxidant~humidity,data=airpollution))
+summary(lm(oxidant~insolation,data=airpollution))
+```
+wind has the highest R-square value and a p-value < 0.05 . Therefore, we add this explanatory variable to or model.
+
+```{r}
+summary(lm(oxidant~wind+temperature,data=airpollution))
+summary(lm(oxidant~wind+humidity,data=airpollution))
+summary(lm(oxidant~wind+insolation,data=airpollution))
+
+```
+Next we add temperature. It has the highest R square value and the variable is significant.
+
+
+```{r}
+summary(lm(oxidant~wind+temperature+humidity,data=airpollution))
+summary(lm(oxidant~wind+temperature+insolation,data=airpollution))
+```
+None of the other explanatory variables - humidity and insolation are significant.
+Therefore our linear model has only two explanatory variables - wind and temperature.
+
+
+```{r}
+lm_up = lm(oxidant~wind+temperature,data=airpollution)
+summary(lm_up)
+```
+oxidant = -5.20334 + (-0.42706)*wind + (0.52035)temperature + error
+
+STEP DOWN : 
+```{r}
+summary(lm(oxidant~wind+temperature+humidity+insolation,data=airpollution))
+```
+Insolation has the largest p-value and it is greater than 0.05. Therefore, we remove Insolation variable from the linear model.
+
+```{r}
+summary(lm(oxidant~wind+temperature+humidity,data=airpollution))
+```
+Largest p-value of humidity is > 0.05. Therefore, we remove humidity from the model.
+
+```{r}
+summary(lm(oxidant~wind+temperature,data=airpollution))
+```
+oxidant = -5.20334 + (-0.42706)*wind + (0.52035)temperature + error
+
+We get the same model from both step up and step down approaches. Therefore, we don't need to compare the models.
+
+```{r}
+linear_model = lm(oxidant~wind+temperature,data=airpollution)
+x_newdata = data.frame(wind=33,temperature=54)
+predict(linear_model,x_newdata,interval="confidence")
+predict(linear_model,x_newdata,interval="prediction")
+
+## what does negative value imply over here ?
+```
+
+
+QUESTION - 4
+
+PART a : 
+```{r}
+psidata <- read.csv("~/Downloads/psi.txt", sep="")
+
+psidata$gpa=as.numeric(psidata$gpa)
+psidata$psi=as.factor(psidata$psi)
+is.factor(psidata$psi)
+glm_model=glm(passed~psi*gpa,data=psidata,family=binomial)
+anova(glm_model,test="Chisq") # only the last p value is relevant
+```
+
+p-value of interaction between psi and gpa is greater than 0.05. Therefore, the interaction is not significant between factor psi and predictor grade.
+
+
+```{r}
+glm2 = glm(passed~psi+gpa,data=psidata,family=binomial)
+drop1(glm2,test="Chisq")
+```
+p-value for psi and gpa is less than 0.05. Therefore, they are significant.
+
+```{r}
+summary(glm2)
+```
+-11.602 + 2.338 + 3.063*x
+psi has a positive effect on probability of success(i.e. pass = 1). Therefore, it works.
+It increases the odds by e^2.338 = 10.36
+
+
+```{r}
+is.factor(psidata$psi)
+```
+
+PART b:
+```{r}
+newdata=data.frame(psi=1,gpa=3)
+predict(glm2,newdata,type="response")
+
+newdata2=data.frame(psi=0,gpa=3)
+predict(glm2,newdata2,type="response")
+
+```
+
+Therefore, higher grade of 3 is more probable with psi than without psi.
+
+
+PART c:
+
+-11.602 + 2.338 + 3.063*x
+psi has a positive effect on probability of success(i.e. pass = 1). Therefore, it works.
+It increases the odds by e^2.338 = 10.36
+Therefore, it increases the success probability(of passing the exam) by 10 times with psi as compared to without psi.This number is not depenedent on gpa.
+
+PART d:
+CONTINGENCY TABLES:
+Check if psi and passed is independent or not.
+```{r}
+
+tot=xtabs(~psi+passed,data=psidata)
+tot
+
+z=chisq.test(tot); z
+
+
+```
+
+
+```{r}
+
+chisq.test(tot,simulate.p.value=TRUE)
+
+```
+they are not independent as p-value is less than 0.05. Therefore, passed and psi are dependent.
+
+It is a 2*2 table, therefore we can also use fischer's exact test. From this test we can get the exact p-value.
+
+```{r}
+fisher.test(tot)
+```
+Therefore, exact p-value is 0.0265. Fischer test approach is valid here. 
+
+```{r}
+ratio = (6/15)/(8/3)
+print(ratio)
+```
+
+For every one student with psi and who has passed there is 0.15 that failed.
+
+PART e:
+
+Fischer test approach is valid here.
+
+Advantage of logistic but disadvantage of contingency table : By second approach, we show there is dependency but it doesn't quanitfy it. Whereas we can numerically express the relation between psi and passed from logistic regression. We can't make predictions with the results of the fisher's exact test.
+
+Fischer test is more suited for small sample size.
+
+Advantage of contigency but disadvantage of logistic : 
+
+
+
