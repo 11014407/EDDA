@@ -25,7 +25,7 @@ chitest
 
 ### 1b.
 ```{r}
-data <- nauseatable
+#data <- nauseatable
 Nausea<-c()
 medicine <- c()
 for(i in 1:nrow(data)){
@@ -63,7 +63,7 @@ The p-value obtained by the chisquare test for contingency tables is 0.03642928 
 
 ## 2
 ```{r}
-airpollution <- read.csv("~/Downloads/airpollution.txt", sep="")
+airpollution <- read.csv("airpollution.txt", sep="")
 View(airpollution)
 ```
 
@@ -111,13 +111,9 @@ No significant linear correlation
 
 # check multicolinearity of variables :
 ```{r}
-vif(dogsnlm)
-```
-
-
-```{r}
-install.packages("car",dependencies=TRUE)
-library(car)
+#install.packages("car",dependencies=TRUE)
+#library(car)
+#vif(dogsnlm)
 ```
 
 ```{r}
@@ -323,7 +319,7 @@ The p-values are still well below 0.05, so the results are still statistically s
 
 PART a : 
 ```{r}
-psidata <- read.csv("~/Downloads/psi.txt", sep="")
+psidata <- read.csv("psi.txt", sep="")
 
 psidata$gpa=as.numeric(psidata$gpa)
 psidata$psi=as.factor(psidata$psi)
