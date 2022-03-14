@@ -1,0 +1,65 @@
+---
+title: "assignment2"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+data <- read.csv("C:/Users/keuni/Desktop/GIT REPO/EDDA/nauseatable.txt", sep="")
+chitest <- chisq.test(data)
+chitest$residuals
+```
+From the residuals we can see that Chlorpromazine causes relatively less incidents of nausea while Pentobarbital(100mg) causes a lot more. While Pentobarbital(150mg) is also responsible for some cases of nausea, this is less so than Pentobarbital(100mg).
+
+```{r}
+chitest
+```
+
+
+
+1b
+
+```{r}
+data <- nauseatable
+Nausea<-c()
+medicine <- c()
+for(i in 1:nrow(data)){
+    Nausea <-c(Nausea, rep(1, data[i, 1]))
+    Nausea <-c(Nausea, rep(0, data[i, 2]))
+    medicine <- c(medicine, rep(i, (data[i, 1]+data[i, 2])))
+}
+
+df <- data.frame(medicine, Nausea)
+B=1000
+Tstar = c()
+for (i in 1:B){
+  Xstar = df[sample(nrow(df),1000,replace=TRUE),]
+  test=chisq.test(table(Xstar))
+  Tstar =  c(Tstar, test$statistic)
+  
+}
+
+hist(Tstar)
+chitest$p.value
+chitest$statistic
+
+pl=sum(Tstar<chitest$statistic)/B
+pr=sum(Tstar>chitest$statistic)/B
+pl
+pr
+p_value = 2*min(pl,pr)
+p_value
+```
+1c
+The p-value obtained by the chisquare test for contingency tables is 0.03642928 and that for the permutation test is 0.034 which is slightly lower but by a negligable amount, making them around the same. This is what is to be expected as using different permutations does not change the distribution of the data and the use of the same test statistic in both test results in a similar outcome.
+
+
+
+
+
+
+
