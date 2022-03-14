@@ -352,9 +352,11 @@ is.factor(psidata$psi)
 PART b:
 ```{r}
 newdata=data.frame(psi=1,gpa=3)
+newdata$psi <- as.factor(newdata$psi)
 predict(glm2,newdata,type="response")
 
 newdata2=data.frame(psi=0,gpa=3)
+newdata2$psi <- as.factor(newdata2$psi)
 predict(glm2,newdata2,type="response")
 
 ```
