@@ -1,0 +1,510 @@
+---
+title: "Assignment 2"
+output: pdf_document
+date: '2022-03-14'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# EDDA Assignment 2
+
+## 1
+
+### 1a.
+```{r}
+data <- read.csv("nauseatable.txt", sep="")
+chitest <- chisq.test(data)
+chitest$residuals
+```
+From the residuals we can see that Chlorpromazine causes relatively less incidents of nausea while Pentobarbital(100mg) causes a lot more. While Pentobarbital(150mg) is also responsible for some cases of nausea, this is less so than Pentobarbital(100mg).
+
+```{r}
+chitest
+```
+
+### 1b.
+```{r}
+data <- nauseatable
+Nausea<-c()
+medicine <- c()
+for(i in 1:nrow(data)){
+    Nausea <-c(Nausea, rep(1, data[i, 1]))
+    Nausea <-c(Nausea, rep(0, data[i, 2]))
+    medicine <- c(medicine, rep(i, (data[i, 1]+data[i, 2])))
+}
+
+df <- data.frame(medicine, Nausea)
+B=1000
+Tstar = c()
+for (i in 1:B){
+  Xstar = df[sample(nrow(df),1000,replace=TRUE),]
+  test=chisq.test(table(Xstar))
+  Tstar =  c(Tstar, test$statistic)
+  
+}
+
+hist(Tstar)
+chitest$p.value
+chitest$statistic
+
+pl=sum(Tstar<chitest$statistic)/B
+pr=sum(Tstar>chitest$statistic)/B
+pl
+pr
+p_value = 2*min(pl,pr)
+p_value
+```
+
+### 1c
+The p-value obtained by the chisquare test for contingency tables is 0.03642928 and that for the permutation test is 0.034 which is slightly lower but by a negligable amount, making them around the same. This is what is to be expected as using different permutations does not change the distribution of the data and the use of the same test statistic in both test results in a similar outcome.
+
+
+
+## 2
+```{r}
+airpollution <- read.csv("~/Downloads/airpollution.txt", sep="")
+View(airpollution)
+```
+
+```{r}
+pairs(airpollution)
+
+# temperature and oxidant might have a linear relation
+
+```
+
+```{r}
+dogslr = lm(oxidant~wind+temperature+humidity+insolation,data=airpollution)
+summary(dogslr)
+```
+p-value for wind and temperature is less than 0.5. Therefore, they are significant.
+
+Cook's Distance with only significant explanatory variables: 
+```{r}
+dogsnlm = lm(oxidant~wind+temperature,data=airpollution)
+round(cooks.distance(dogsnlm),2)
+max(round(cooks.distance(dogsnlm),2))
+```
+No influence point here.
+
+
+Cook's Distance for entire model : 
+```{r}
+round(cooks.distance(dogslr),2)
+max(round(cooks.distance(dogslr),2))
+order(cooks.distance(dogslr))
+```
+
+Cook's distance for 23rd data point is close to 1 so it can be an influence point.
+```{r}
+plot(1:30,cooks.distance(dogslr),type="b")
+```
+COLLINEARITY:
+
+A.) Pairwise Linear Correlation
+```{r}
+round(cor(airpollution),2)
+```
+No significant linear correlation
+
+
+# check multicolinearity of variables :
+```{r}
+vif(dogsnlm)
+```
+
+
+```{r}
+install.packages("car",dependencies=TRUE)
+library(car)
+```
+
+```{r}
+x=residuals(lm(wind~temperature+humidity+insolation,data=airpollution))
+y=residuals(lm(oxidant~temperature+humidity+insolation,data=airpollution))
+plot(x,y,main="Added variable plot for wind", xlab="residual of wind",ylab="residual of oxidant")
+```
+
+```{r}
+x_new=residuals(lm(wind~temperature,data=airpollution))
+y_new=residuals(lm(oxidant~temperature,data=airpollution))
+summary(lm(y_new~x_new))
+summary(dogsnlm)
+```
+Step-up model:
+```{r}
+summary(lm(oxidant~wind,data=airpollution))
+summary(lm(oxidant~temperature,data=airpollution))
+summary(lm(oxidant~humidity,data=airpollution))
+summary(lm(oxidant~insolation,data=airpollution))
+```
+wind has the highest R-square value and a p-value < 0.05 . Therefore, we add this explanatory variable to or model.
+
+```{r}
+summary(lm(oxidant~wind+temperature,data=airpollution))
+summary(lm(oxidant~wind+humidity,data=airpollution))
+summary(lm(oxidant~wind+insolation,data=airpollution))
+
+```
+Next we add temperature. It has the highest R square value and the variable is significant.
+
+
+```{r}
+summary(lm(oxidant~wind+temperature+humidity,data=airpollution))
+summary(lm(oxidant~wind+temperature+insolation,data=airpollution))
+```
+None of the other explanatory variables - humidity and insolation are significant.
+Therefore our linear model has only two explanatory variables - wind and temperature.
+
+
+```{r}
+lm_up = lm(oxidant~wind+temperature,data=airpollution)
+summary(lm_up)
+```
+oxidant = -5.20334 + (-0.42706)*wind + (0.52035)temperature + error
+
+STEP DOWN : 
+```{r}
+summary(lm(oxidant~wind+temperature+humidity+insolation,data=airpollution))
+```
+Insolation has the largest p-value and it is greater than 0.05. Therefore, we remove Insolation variable from the linear model.
+
+```{r}
+summary(lm(oxidant~wind+temperature+humidity,data=airpollution))
+```
+Largest p-value of humidity is > 0.05. Therefore, we remove humidity from the model.
+
+```{r}
+summary(lm(oxidant~wind+temperature,data=airpollution))
+```
+oxidant = -5.20334 + (-0.42706)*wind + (0.52035)temperature + error
+
+We get the same model from both step up and step down approaches. Therefore, we don't need to compare the models.
+
+```{r}
+linear_model = lm(oxidant~wind+temperature,data=airpollution)
+x_newdata = data.frame(wind=33,temperature=54)
+predict(linear_model,x_newdata,interval="confidence")
+predict(linear_model,x_newdata,interval="prediction")
+
+## what does negative value imply over here ?
+```
+
+## 3
+
+Load fruitflies.txt and add loglongevity column
+```{r}
+fruitflies = read.csv("fruitflies.txt", sep="")
+fruitflies = fruitflies[sample(nrow(fruitflies)),]
+loglong = log(fruitflies["longevity"])
+fruitflies['loglongevity'] = loglong
+```
+
+### 3a.
+We want to know if there is a statistically significant difference between three
+groups, based on one variable (log longevity). Therefore, we use a one-way
+ANOVA test. 
+
+Firs, we create an informative graph, plotting the thorax variable against the
+log longevity variable for each type of activity
+```{r}
+high = subset(fruitflies, activity == 'high')
+low = subset(fruitflies, activity == 'low')
+isolated = subset(fruitflies, activity == 'isolated')
+
+plot(high$thorax, high$longevity, col='blue', pch=20)
+points(low$thorax, low$longevity, col='red', pch=20)
+points(isolated$thorax, isolated$longevity, col='green', pch=20)
+```
+
+Then, we perform the anova test:
+```{r}
+fruitflies_model <- aov(loglongevity ~ activity, data=fruitflies)
+fruitflies_model
+summary(fruitflies_model)
+```
+
+We can see that the p-value for activity is well below 0.05. Therefore, the sexual activity *influences* the longevity.
+
+To estimate the longevities for each of the three conditions,
+we take the means:
+```{r}
+mean(high$longevity)
+mean(low$longevity)
+mean(isolated$longevity)
+```
+
+Therefore, the longevity 
+for *high activity* is 38.72, 
+for *low activity* is 56.76,
+for *isolated activity* is 63.56
+
+This means that the higher the sexual activity, the shorter the fruitflies live.
+
+
+### 3b.
+We now include the thorax variable, which is a numerical variable. That means we now have a factor variable, a numerical variable and a numerical outcome, which means that an ANCOVA-test is appropriate. We use
+the drop1 function to make sure the result is correct even if the ANCOVA test is not balanced
+
+```{r}
+fruitflies$activity = as.factor(fruitflies$activity)
+fruitflies_model2 = drop1(lm(loglongevity ~ activity + thorax, data=fruitflies), test="F")
+fruitflies_model2
+summary(fruitflies_model2)
+```
+
+From the p-values, we can see that both the thorax variable and the activity variable influence the longevity, as these p-values are both well below 0.05.
+
+If we take the maximum and minimum thorax lengths, we get the following thorax lengths and longevities:
+
+```{r}
+max_thorax = max(fruitflies['thorax'])
+min_thorax = min(fruitflies['thorax'])
+max_thorax_ff = subset(fruitflies, thorax == max_thorax)
+min_thorax_ff = subset(fruitflies, thorax == min_thorax)
+
+high_max = subset(high, thorax == max(high['thorax']))
+high_min = subset(high, thorax == min(high['thorax']))
+low_max = subset(low, thorax == max(low['thorax']))
+low_min = subset(low, thorax == min(low['thorax']))
+isolated_max = subset(isolated, thorax == max(isolated['thorax']))
+isolated_min = subset(isolated, thorax == min(isolated['thorax']))
+
+print("High")
+mean(high_max$longevity)
+mean(high_min$longevity)
+print("Low")
+mean(low_max$longevity)
+mean(low_min$longevity)
+print("Isolated")
+mean(isolated_max$longevity)
+mean(isolated_min$longevity)
+```
+We can see that for both the maximum and minimum values of thorax length, the longevity is highest for *isolated activity*, lower for *low activity* and lowest for *high activity*. Even so, the longevity for the maximum thorax value is still higher for high activity than it is for the minimum thorax value for isolated activity. This means that sexual activity decreases longevity. 
+
+### 3c.
+We once again plot the longevity against the thorax length:
+```{r}
+plot(high$thorax, high$longevity, col='blue', pch=20)
+points(low$thorax, low$longevity, col='red', pch=20)
+points(isolated$thorax, isolated$longevity, col='green', pch=20)
+```
+Here, we can see a clear increase in longevity when the thorax length increases, for each of the three activity types. This indicates that the the higher the thorax length, the higher the longevity. To check if this is actually statistically significant for each of the three activity types, we use a one-way ANOVA test for each of the activities:
+```{r}
+high_model <- aov(loglongevity ~ thorax, data=high)
+summary(high_model)
+print('-------------------------------------------')
+low_model <- aov(loglongevity ~ thorax, data=low)
+summary(low_model)
+print('-------------------------------------------')
+isolated_model <- aov(loglongevity ~ thorax, data=isolated)
+summary(isolated_model)
+```
+In the results, we can see that the p-values for each activity type are below 0.05. Therefore, the difference is statistically significant for each activity type. 
+
+### 3d.
+Since both the thorax length and the activity type influence the longevity, we prefer the analysis with thorax length, as this is a more complete analysis. However, since the thorax length influences the longevity the same way for each activity type, the analysis without the thorax length is still correct. If the thorax length would influence the longevity differently for each activity type, then it would be incorrect to analyse the data without the thorax length.
+
+
+### 3e.
+We now perform the ANCOVA analysis, but with the longevity as the response variable instead of the log longevity:
+```{r}
+fruitflies_model2 = drop1(lm(longevity ~ activity + thorax, data=fruitflies), test="F")
+fruitflies_model2
+summary(fruitflies_model2)
+```
+
+The p-values are still well below 0.05, so the results are still statistically significant. However, the Sum Sq and Mean Sq values are now so high that they are meaningless. Therefore, it is wise to use the log longevity as the response variable and not the longevity.
+
+
+
+## 4
+
+PART a : 
+```{r}
+psidata <- read.csv("~/Downloads/psi.txt", sep="")
+
+psidata$gpa=as.numeric(psidata$gpa)
+psidata$psi=as.factor(psidata$psi)
+is.factor(psidata$psi)
+glm_model=glm(passed~psi*gpa,data=psidata,family=binomial)
+anova(glm_model,test="Chisq") # only the last p value is relevant
+```
+
+p-value of interaction between psi and gpa is greater than 0.05. Therefore, the interaction is not significant between factor psi and predictor grade.
+
+
+```{r}
+glm2 = glm(passed~psi+gpa,data=psidata,family=binomial)
+drop1(glm2,test="Chisq")
+```
+p-value for psi and gpa is less than 0.05. Therefore, they are significant.
+
+```{r}
+summary(glm2)
+```
+-11.602 + 2.338 + 3.063*x
+psi has a positive effect on probability of success(i.e. pass = 1). Therefore, it works.
+It increases the odds by e^2.338 = 10.36
+
+
+```{r}
+is.factor(psidata$psi)
+```
+
+PART b:
+```{r}
+newdata=data.frame(psi=1,gpa=3)
+predict(glm2,newdata,type="response")
+
+newdata2=data.frame(psi=0,gpa=3)
+predict(glm2,newdata2,type="response")
+
+```
+
+Therefore, higher grade of 3 is more probable with psi than without psi.
+
+
+PART c:
+
+-11.602 + 2.338 + 3.063*x
+psi has a positive effect on probability of success(i.e. pass = 1). Therefore, it works.
+It increases the odds by e^2.338 = 10.36
+Therefore, it increases the success probability(of passing the exam) by 10 times with psi as compared to without psi.This number is not depenedent on gpa.
+
+PART d:
+CONTINGENCY TABLES:
+Check if psi and passed is independent or not.
+```{r}
+
+tot=xtabs(~psi+passed,data=psidata)
+tot
+
+z=chisq.test(tot); z
+
+
+```
+
+
+```{r}
+
+chisq.test(tot,simulate.p.value=TRUE)
+
+```
+they are not independent as p-value is less than 0.05. Therefore, passed and psi are dependent.
+
+It is a 2*2 table, therefore we can also use fischer's exact test. From this test we can get the exact p-value.
+
+```{r}
+fisher.test(tot)
+```
+Therefore, exact p-value is 0.0265. Fischer test approach is valid here. 
+
+```{r}
+ratio = (6/15)/(8/3)
+print(ratio)
+```
+
+For every one student with psi and who has passed there is 0.15 that failed.
+
+PART e:
+
+Fischer test approach is valid here.
+
+Advantage of logistic but disadvantage of contingency table : By second approach, we show there is dependency but it doesn't quanitfy it. Whereas we can numerically express the relation between psi and passed from logistic regression. We can't make predictions with the results of the fisher's exact test.
+
+Fischer test is more suited for small sample size.
+
+Advantage of contigency but disadvantage of logistic
+
+
+
+## 5
+
+Load awards.txt
+```{r}
+awards = read.csv("awards.txt", sep="")
+```
+
+### 5a.
+
+We perform Poisson regression using the variable program
+```{r}
+poisson_awards <- glm(num_awards ~ prog, family="poisson", data=awards)
+#poisson_awards
+summary(poisson_awards)
+```
+Here, the p-value is greater than 0.05, so the variable program alone does not influence the number of awards. 
+
+Next, we estimate the number of awards of each type of program, according to the Poisson model. We create new dataframes that contain each of the program type, and use the predict() function to apply the model to the awards type.
+
+```{r}
+new_data = data.frame(prog=1)
+predict(poisson_awards, newdata=new_data, type = "response")
+new_data = data.frame(prog=2)
+predict(poisson_awards, newdata=new_data, type = "response")
+new_data = data.frame(prog=3)
+predict(poisson_awards, newdata=new_data, type = "response")
+```
+According to the results, program *academic* (3) results in the highest number of awards, which is 1.12.
+
+### 5b.
+```{r}
+prog1 = subset(awards, prog==1)
+hist(prog1$num_awards)
+prog2 = subset(awards, prog==2)
+hist(prog2$num_awards)
+prog3 = subset(awards, prog==3)
+hist(prog3$num_awards)
+```
+The distributions have the same shape, the response variable is ordinal and we assume independence. Therefore, we *can* apply the Kruskal-Wallis test.
+Performing this test:
+
+```{r}
+kruskal_wallis<-kruskal.test(num_awards ~ prog, data=awards)
+kruskal_wallis
+```
+Here, the p-value is lower than 0.05, which implies that the program *does* influence the number of awards.
+
+### 5c
+
+We perform Poisson regression using both the variables math and program:
+
+```{r}
+poisson_awards <- glm(num_awards ~ prog+math, family="poisson", data=awards)
+#poisson_awards
+summary(poisson_awards)
+```
+
+When using math and program, the p-values for both variables are below 0.05, and are thus significant. This is interesting, as creating the model using only the program variable yields that program is not significant in influencing the number of awards. This means that the model using only the program variable is insufficient. 
+
+To see which program is most effective, we use the model to predict the number of awards for each program, using both the maximum and minimum values of the math variable
+```{r}
+print("Program 1")
+new_data = data.frame(prog=1, math=max(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+new_data = data.frame(prog=1, math=min(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+
+print("Program 2")
+new_data = data.frame(prog=2, math=max(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+new_data = data.frame(prog=2, math=min(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+
+print("Program 3")
+new_data = data.frame(prog=3, math=max(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+new_data = data.frame(prog=3, math=min(awards$math))
+predict(poisson_awards, newdata=new_data, type = "response")
+
+```
+In the results, we can see that for both the maximum and minimum values of the math variable, the number of awards is the highest for program 3. Therefore program 3 is three is the best for the number of awards.
+
+The number of awards for the vocational program (1) and the math score of 55 is estimated by:
+```{r}
+new_data = data.frame(prog=1, math=55)
+predict(poisson_awards, newdata=new_data, type = "response")
+```
+Thus, the number of awards for the vocational program and math score 55 is 0.75.

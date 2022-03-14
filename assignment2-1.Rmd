@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
-data <- read.csv("C:/Users/keuni/Desktop/GIT REPO/EDDA/nauseatable.txt", sep="")
+data <- read.csv("nauseatable.txt", sep="")
 chitest <- chisq.test(data)
 chitest$residuals
 ```
